@@ -1,0 +1,17 @@
+venv/
+__pycache__/
+build/
+dist/
+*.pyc
+*.log
+*.mp4
+chat_id.txt
+run_output.txt
+*.jpg
+*.wav
+bot_fatal_crash.txt
+screenshot.png
+intruder.jpg
+intruder.wav
+keylog.txt
+*.spec
