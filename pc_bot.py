@@ -961,12 +961,10 @@ def send_startup_message():
                     if resp.status_code == 200:
                         break
                 except Exception as e:
-                    with open("bot_error.log", "a") as f:
-                        f.write(f"Startup HTTP error: {e}\n")
+                    print(f"Startup HTTP error: {e}")
                 time.sleep(5) # Wait 5s and try again if no wifi
         except Exception as e:
-            with open("bot_error.log", "a") as f:
-                f.write(f"Startup File error: {e}\n")
+            print(f"Startup File error: {e}")
 
 def main():
     send_startup_message()
