@@ -1043,5 +1043,18 @@ if __name__ == "__main__":
             if sys.stderr:
                 import traceback
                 traceback.print_exc()
+            
+            try:
+                chat_id_file = os.path.join(os.path.dirname(__file__), "chat_id.txt")
+                if os.path.exists(chat_id_file):
+                    with open(chat_id_file, "r") as f:
+                        chat_id = int(f.read().strip())
+                    import httpx
+                    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+                    msg = f"⚠️ **Bot crashed!**\nError: `{e}`\nRestarting..."
+                    httpx.post(url, json={"chat_id": chat_id, "text": msg, "parse_mode": "Markdown"}, timeout=5)
+            except Exception:
+                pass
+
             # Wait 10 seconds before trying to reconnect to Telegram
             time.sleep(10)
