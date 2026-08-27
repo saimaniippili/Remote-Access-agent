@@ -429,6 +429,11 @@ async def restart_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Initiating PC restart in 10 seconds... 🔄")
     os.system("shutdown /r /t 10")
 
+async def sleep_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await check_auth(update): return
+    await update.message.reply_text("Putting PC to sleep... ??")
+    os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
+
 
 # --- APPS & FILES ---
 
@@ -1188,6 +1193,7 @@ def main():
     app.add_handler(CommandHandler("lock", lock_cmd))
     app.add_handler(CommandHandler("shutdown", shutdown_cmd))
     app.add_handler(CommandHandler("restart", restart_cmd))
+    app.add_handler(CommandHandler("sleep", sleep_cmd))
     
     # Apps & Files
     app.add_handler(CommandHandler("open", open_cmd))
@@ -1255,4 +1261,5 @@ if __name__ == "__main__":
 
             # Wait 10 seconds before trying to reconnect to Telegram
             time.sleep(10)
+
 
