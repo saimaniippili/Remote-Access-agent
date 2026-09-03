@@ -5,7 +5,7 @@ import ctypes
 import sys
 
 # Prevent multiple instances of the bot from running at the same time
-mutex = ctypes.windll.kernel32.CreateMutexW(None, False, "Global\\telegram_bot_pc_bot_single_instance")
+mutex = ctypes.windll.kernel32.CreateMutexW(None, False, "telegram_bot_pc_bot_single_instance_v2")
 if ctypes.windll.kernel32.GetLastError() == 183: # ERROR_ALREADY_EXISTS
     print('Another instance of pc_bot is already running. Exiting.')
     sys.exit(0)
@@ -1282,6 +1282,8 @@ if __name__ == "__main__":
 
             # Wait 10 seconds before trying to reconnect to Telegram
             time.sleep(10)
+
+
 
 
 
