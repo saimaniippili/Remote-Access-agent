@@ -1201,7 +1201,10 @@ def send_startup_message():
 
 async def approval_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer()
+    try:
+        await query.answer()
+    except Exception as e:
+        print(f'Error answering query: {e}')
     
     data = query.data
     if data.startswith("approve_") or data.startswith("deny_"):
@@ -1309,6 +1312,7 @@ if __name__ == "__main__":
 
             # Wait 10 seconds before trying to reconnect to Telegram
             time.sleep(10)
+
 
 
 
