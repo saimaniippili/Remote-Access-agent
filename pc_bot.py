@@ -1224,7 +1224,7 @@ async def approval_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception as e:
             print(f"Error editing message: {e}")
 
-\ndef main():
+def main():
     send_startup_message()
     app = Application.builder().token(TOKEN).build()
 
