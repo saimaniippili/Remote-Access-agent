@@ -1,0 +1,16 @@
+{
+  "telegram-remote-approval": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .agents/remote_approval.py",
+            "timeout": 310
+          }
+        ]
+      }
+    ]
+  }
+}
