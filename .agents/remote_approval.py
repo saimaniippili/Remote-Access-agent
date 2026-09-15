@@ -68,7 +68,7 @@ def main():
                 with open(result_file, "r") as f:
                     decision = f.read().strip()
                 os.remove(result_file)
-                print(json.dumps({"decision": decision}))
+                if decision == "approve": decision = "allow"`n                print(json.dumps({"decision": decision}))
                 return
             time.sleep(1)
             
@@ -87,3 +87,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
