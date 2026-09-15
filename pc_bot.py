@@ -92,8 +92,8 @@ import threading
 import httpx
 from plyer import notification
 import telegram.error
-from telegram import Update, Document, PhotoSize
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram import Update, Document, PhotoSize, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 import shutil
 import yt_dlp
 import sounddevice as sd
@@ -1198,11 +1198,38 @@ def send_startup_message():
         except Exception as e:
             print(f"Startup File error: {e}")
 
-def main():
+
+async def approval_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    data = query.data
+    if data.startswith("approve_") or data.startswith("deny_"):
+        action, req_id = data.split("_", 1)
+        
+        # Security check: Ensure the user is the allowed user
+        if update.effective_user.username != ALLOWED_USERNAME:
+            await query.answer("You are not authorized!", show_alert=True)
+            return
+
+        result_file = os.path.join(TEMP_DIR, f"approval_{req_id}.result")
+        with open(result_file, "w") as f:
+            f.write(action)
+            
+        text = query.message.text
+        new_text = text + f"\n\n[{'? Allowed' if action == 'approve' else '? Denied'} by {update.effective_user.username}]"
+        
+        try:
+            await query.edit_message_text(text=new_text)
+        except Exception as e:
+            print(f"Error editing message: {e}")
+
+\ndef main():
     send_startup_message()
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start_cmd))
+    app.add_handler(CallbackQueryHandler(approval_callback))
     
     # System
     app.add_handler(CommandHandler("screenshot", screenshot_cmd))
