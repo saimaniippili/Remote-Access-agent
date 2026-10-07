@@ -1228,6 +1228,12 @@ async def approval_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             print(f"Error editing message: {e}")
 
 def main():
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     send_startup_message()
     app = Application.builder().token(TOKEN).build()
 
@@ -1279,7 +1285,14 @@ def main():
     app.add_handler(CommandHandler("hydra", hydra_cmd))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_messages))
     
-    app.run_polling()
+    try:
+        app.run_polling(bootstrap_retries=-1, close_loop=False)
+    finally:
+        try:
+            if not loop.is_closed():
+                loop.close()
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     import sys
